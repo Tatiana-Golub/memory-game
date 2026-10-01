@@ -1,3 +1,6 @@
+import { cardImages } from './cardsData.js';
+import { createShuffledDeck } from './game.js';
+
 const createElement = (tag, className, textContent = '') => {
     const element = document.createElement(tag);
     if (className) {
@@ -84,40 +87,57 @@ const createGameInfo = () => {
     };
 };
 
-const createCard = () => {
+const createCard = (cardData) => {
     const card = createButton(
         '',
         'card',
-        'Открыть карту',
+        `Открыть карту: ${cardData.name}`,
     );
 
-    const cardInner = createElement('span', 'card-inner');
+    card.dataset.cardId = cardData.id;
+    card.dataset.pairId = cardData.pairId;
+
+    const cardInner = createElement(
+        'span',
+        'card-inner',
+    );
+
     const cardBack = createElement(
         'span',
         'card-back',
     );
+
     const cardFront = createElement(
         'span',
         'card-front',
     );
 
+    const image = document.createElement('img');
+
+    image.src = cardData.src;
+    image.alt = cardData.name;
+
+    cardFront.append(image);
     cardInner.append(cardBack, cardFront);
     card.append(cardInner);
 
     return card;
 };
 
-const createGameBoard = () => {
+const createGameBoard = (deck) => {
     const board = createElement(
         'section',
         'game-board',
     );
 
-    board.setAttribute('aria-label', 'Игровое поле');
+    board.setAttribute(
+        'aria-label',
+        'Игровое поле',
+    );
 
-    for (let i = 0; i < 16; i += 1) {
-        board.append(createCard());
-    }
+    deck.forEach((cardData) => {
+        board.append(createCard(cardData));
+    });
 
     return board;
 };
@@ -146,12 +166,14 @@ const createFooter = () => {
     return footer;
 };
 
-const createApp = () => {
+const createApp = (deck) => {
     const app = createElement('div', 'app');
+
     const header = createHeader();
     const main = createElement('main', 'game');
+
     const gameInfo = createGameInfo();
-    const gameBoard = createGameBoard();
+    const gameBoard = createGameBoard(deck);
 
     main.append(
         gameInfo.container,
@@ -159,6 +181,7 @@ const createApp = () => {
     );
 
     const footer = createFooter();
+
     app.append(
         header,
         main,
@@ -175,6 +198,8 @@ const createApp = () => {
     };
 };
 
-const { app, elements } = createApp();
+const deck = createShuffledDeck(cardImages);
+
+const { app, elements } = createApp(deck);
 
 document.body.append(app);

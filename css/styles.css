@@ -151,6 +151,13 @@ button {
     transform: rotateY(180deg);
 }
 
+.card-front img {
+    display: block;
+    width: 65%;
+    height: 65%;
+    object-fit: contain;
+}
+
 .card.flipped .card-inner {
     transform: rotateY(180deg);
 }
