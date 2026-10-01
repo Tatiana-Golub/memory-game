@@ -140,10 +140,10 @@ button {
 }
 
 .card-back {
-    background-color: #170057;
+    background-color: #5ea9eb;
     background-image: url('../assets/images/card-back-image.png');
     background-size: 200px;
-    border: 3px solid #41fcf3;
+    border: 3px solid #1a14db;
 }
 
 .card-front {
