@@ -36,7 +36,11 @@ const createHeader = () => {
 
     actions.append(newGameButton, leaderboardButton);
     header.append(logo, actions);
-    return header;
+    return {
+        container: header,
+        newGameButton,
+        leaderboardButton,
+    };
 };
 
 const createStat = (label, value, className) => {
@@ -184,7 +188,7 @@ const createApp = (deck) => {
     const footer = createFooter();
 
     app.append(
-        header,
+        header.container,
         main,
         footer,
     );
@@ -195,6 +199,8 @@ const createApp = (deck) => {
             movesValue: gameInfo.movesValue,
             pairsValue: gameInfo.pairsValue,
             gameBoard,
+            newGameButton: header.newGameButton,
+            leaderboardButton: header.leaderboardButton,
         },
     };
 };
@@ -203,7 +209,7 @@ const handleMatch = () => {
     gameState.firstCard.classList.add('matched');
     gameState.secondCard.classList.add('matched');
 
-   gameState.firstCard.setAttribute(
+    gameState.firstCard.setAttribute(
         'aria-label',
         `Найденная пара: ${gameState.firstCard.dataset.cardName}`,
     );
@@ -297,8 +303,43 @@ const flipCard = (card) => {
     );
 };
 
+const resetGameState = () => {
+    if (gameState.hideTimeoutId) {
+        clearTimeout(gameState.hideTimeoutId);
+    }
+
+    gameState.firstCard = null;
+    gameState.secondCard = null;
+    gameState.moves = 0;
+    gameState.pairs = 0;
+    gameState.isLocked = false;
+    gameState.isGameOver = false;
+    gameState.hideTimeoutId = null;
+};
+
+const resetGameInfo = () => {
+    elements.movesValue.textContent = '0';
+    elements.pairsValue.textContent = '0 / 8';
+};
+
 const deck = createShuffledDeck(cardImages);
 const gameState = createGameState();
+
+const resetGameBoard = () => {
+    elements.gameBoard.replaceChildren();
+
+    const newDeck = createShuffledDeck(cardImages);
+
+    newDeck.forEach((cardData) => {
+        elements.gameBoard.append(createCard(cardData));
+    });
+};
+
+const startNewGame = () => {
+    resetGameState();
+    resetGameInfo();
+    resetGameBoard();
+};
 
 const { app, elements } = createApp(deck);
 
@@ -311,3 +352,8 @@ elements.gameBoard.addEventListener('click', (event) => {
     }
     handleCardClick(card);
 });
+
+elements.newGameButton.addEventListener(
+    'click',
+    startNewGame,
+);
