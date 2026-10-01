@@ -1,5 +1,5 @@
 import { cardImages } from './cardsData.js';
-import { createShuffledDeck } from './game.js';
+import { createGameState, createShuffledDeck } from './game.js';
 
 const createElement = (tag, className, textContent = '') => {
     const element = document.createElement(tag);
@@ -91,11 +91,12 @@ const createCard = (cardData) => {
     const card = createButton(
         '',
         'card',
-        `Открыть карту: ${cardData.name}`,
+        'Открыть карту',
     );
 
     card.dataset.cardId = cardData.id;
     card.dataset.pairId = cardData.pairId;
+    card.dataset.cardName = cardData.name;
 
     const cardInner = createElement(
         'span',
@@ -115,7 +116,7 @@ const createCard = (cardData) => {
     const image = document.createElement('img');
 
     image.src = cardData.src;
-    image.alt = cardData.name;
+    image.alt = '';
 
     cardFront.append(image);
     cardInner.append(cardBack, cardFront);
@@ -198,8 +199,115 @@ const createApp = (deck) => {
     };
 };
 
+const handleMatch = () => {
+    gameState.firstCard.classList.add('matched');
+    gameState.secondCard.classList.add('matched');
+
+   gameState.firstCard.setAttribute(
+        'aria-label',
+        `Найденная пара: ${gameState.firstCard.dataset.cardName}`,
+    );
+
+    gameState.secondCard.setAttribute(
+        'aria-label',
+        `Найденная пара: ${gameState.secondCard.dataset.cardName}`,
+    );
+
+    gameState.pairs += 1;
+
+    elements.pairsValue.textContent = `${gameState.pairs} / 8`;
+
+    resetSelectedCards();
+
+    if (gameState.pairs === 8) {
+        gameState.isGameOver = true;
+    }
+};
+
+const resetSelectedCards = () => {
+    gameState.firstCard = null;
+    gameState.secondCard = null;
+};
+
+const handleMismatch = () => {
+    gameState.isLocked = true;
+
+    gameState.hideTimeoutId = setTimeout(() => {
+        gameState.firstCard.classList.remove('flipped');
+        gameState.secondCard.classList.remove('flipped');
+
+        gameState.firstCard.setAttribute(
+            'aria-label',
+            'Открыть карту',
+        );
+
+        gameState.secondCard.setAttribute(
+            'aria-label',
+            'Открыть карту',
+        );
+
+        resetSelectedCards();
+
+        gameState.isLocked = false;
+        gameState.hideTimeoutId = null;
+    }, 1000);
+};
+const checkCards = () => {
+    const { firstCard, secondCard } = gameState;
+
+    if (firstCard.dataset.pairId === secondCard.dataset.pairId) {
+        handleMatch();
+        return;
+    }
+
+    handleMismatch();
+};
+
+const handleCardClick = (card) => {
+    if (
+        gameState.isLocked
+        || gameState.isGameOver
+        || card.classList.contains('flipped')
+        || card.classList.contains('matched')
+    ) {
+        return;
+    }
+
+    flipCard(card);
+
+    if (!gameState.firstCard) {
+        gameState.firstCard = card;
+        return;
+    }
+
+    gameState.secondCard = card;
+    gameState.moves += 1;
+
+    elements.movesValue.textContent = gameState.moves;
+
+    checkCards();
+};
+
+const flipCard = (card) => {
+    card.classList.add('flipped');
+
+    card.setAttribute(
+        'aria-label',
+        `Закрыть карту: ${card.dataset.cardName}`,
+    );
+};
+
 const deck = createShuffledDeck(cardImages);
+const gameState = createGameState();
 
 const { app, elements } = createApp(deck);
 
 document.body.append(app);
+
+elements.gameBoard.addEventListener('click', (event) => {
+    const card = event.target.closest('.card');
+    if (!card) {
+        return;
+    }
+    handleCardClick(card);
+});

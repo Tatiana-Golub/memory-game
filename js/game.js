@@ -33,3 +33,15 @@ export const createShuffledDeck = (cards) => {
 
   return shuffle(deck);
 };
+
+export const createGameState = () => {
+    return {
+        firstCard: null,
+        secondCard: null,
+        moves: 0,
+        pairs: 0,
+        isLocked: false,
+        isGameOver: false,
+        hideTimeoutId: null,
+    };
+};
