@@ -1,25 +1,8 @@
 import { cardImages } from './cardsData.js';
+import { createElement } from './utils/createElement.js';
+import { createButton } from './utils/createButton.js';
+import { createModal } from './modal.js';
 import { createGameState, createShuffledDeck } from './game.js';
-
-const createElement = (tag, className, textContent = '') => {
-    const element = document.createElement(tag);
-    if (className) {
-        element.className = className;
-    }
-    if (textContent) {
-        element.textContent = textContent;
-    }
-    return element;
-};
-
-const createButton = (text, className, ariaLabel) => {
-    const button = createElement('button', className, text);
-    button.type = 'button';
-    if (ariaLabel) {
-        button.setAttribute('aria-label', ariaLabel);
-    }
-    return button;
-};
 
 const createHeader = () => {
     const header = createElement('header', 'game-header');
@@ -205,6 +188,58 @@ const createApp = (deck) => {
     };
 };
 
+const showVictoryModal = () => {
+    const title = createElement(
+        'h2',
+        'modal-title',
+        'Поздравляем!',
+    );
+
+    const message = createElement(
+        'p',
+        'modal-message',
+        `Вы нашли все пары за ${gameState.moves} ходов!`,
+    );
+
+    const actions = createElement(
+        'div',
+        'modal-actions',
+    );
+
+    const newGameButton = createButton(
+        'Новая игра',
+        'modal-new-game-button',
+    );
+
+    const closeButton = createButton(
+        'Закрыть',
+        'modal-close-button',
+    );
+
+    actions.append(
+        newGameButton,
+        closeButton,
+    );
+
+    modal.content.replaceChildren(
+        title,
+        message,
+        actions,
+    );
+
+    newGameButton.addEventListener(
+        'click',
+        startNewGame,
+    );
+
+    closeButton.addEventListener(
+        'click',
+        modal.close,
+    );
+
+    modal.open();
+};
+
 const handleMatch = () => {
     gameState.firstCard.classList.add('matched');
     gameState.secondCard.classList.add('matched');
@@ -227,6 +262,7 @@ const handleMatch = () => {
 
     if (gameState.pairs === 8) {
         gameState.isGameOver = true;
+        showVictoryModal();
     }
 };
 
@@ -336,6 +372,8 @@ const resetGameBoard = () => {
 };
 
 const startNewGame = () => {
+    modal.close();
+
     resetGameState();
     resetGameInfo();
     resetGameBoard();
@@ -343,7 +381,12 @@ const startNewGame = () => {
 
 const { app, elements } = createApp(deck);
 
-document.body.append(app);
+const modal = createModal();
+
+document.body.append(
+    app,
+    modal.dialog,
+);
 
 elements.gameBoard.addEventListener('click', (event) => {
     const card = event.target.closest('.card');
