@@ -42,6 +42,7 @@ export const createGameState = () => {
         pairs: 0,
         isLocked: false,
         isGameOver: false,
+        resultSaved: false,
         hideTimeoutId: null,
     };
 };

@@ -2,6 +2,7 @@ import { cardImages } from './cardsData.js';
 import { createElement } from './utils/createElement.js';
 import { createButton } from './utils/createButton.js';
 import { createModal } from './modal.js';
+import { saveResult } from './storage.js';
 import { createGameState, createShuffledDeck } from './game.js';
 
 const createHeader = () => {
@@ -262,6 +263,12 @@ const handleMatch = () => {
 
     if (gameState.pairs === 8) {
         gameState.isGameOver = true;
+
+        if (!gameState.resultSaved) {
+            saveResult(gameState.moves);
+            gameState.resultSaved = true;
+        }
+        
         showVictoryModal();
     }
 };
@@ -350,6 +357,7 @@ const resetGameState = () => {
     gameState.pairs = 0;
     gameState.isLocked = false;
     gameState.isGameOver = false;
+    gameState.resultSaved = false;
     gameState.hideTimeoutId = null;
 };
 
