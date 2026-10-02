@@ -210,6 +210,10 @@ button {
     color: #071e7a;
 }
 
+.modal-title {
+    text-align: center;
+}
+
 .modal-actions {
     display: flex;
     justify-content: space-around;
@@ -218,6 +222,31 @@ button {
 
 .modal-open {
     overflow: hidden;
+}
+
+.leaderboard-container {
+    width: 100%;
+}
+
+.leaderboard {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.leaderboard th,
+.leaderboard td {
+    padding: 3px;
+    text-align: center;
+    border-bottom: 1px solid #e5e1dc;
+}
+
+.leaderboard th {
+    font-weight: 700;
+}
+
+.leaderboard-empty {
+    margin: 0;
+    text-align: center;
 }
 
 @media (max-width: 600px) {

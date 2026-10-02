@@ -2,7 +2,8 @@ import { cardImages } from './cardsData.js';
 import { createElement } from './utils/createElement.js';
 import { createButton } from './utils/createButton.js';
 import { createModal } from './modal.js';
-import { saveResult } from './storage.js';
+import { loadResults, saveResult } from './storage.js';
+import { getMovesWord } from './utils/getMovesWord.js';
 import { createGameState, createShuffledDeck } from './game.js';
 
 const createHeader = () => {
@@ -46,6 +47,18 @@ const createStat = (label, value, className) => {
         container: stat,
         valueElement,
     };
+};
+
+const modal = createModal();
+
+const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}.${month}.${year}`;
 };
 
 const createGameInfo = () => {
@@ -189,6 +202,105 @@ const createApp = (deck) => {
     };
 };
 
+const createLeaderboard = (results) => {
+    const container = createElement(
+        'div',
+        'leaderboard-container',
+    );
+
+    const title = createElement(
+        'h2',
+        'modal-title',
+        'Таблица лидеров',
+    );
+
+    container.append(title);
+
+    if (results.length === 0) {
+        const emptyMessage = createElement(
+            'p',
+            'leaderboard-empty',
+            'Пока нет результатов',
+        );
+
+        container.append(emptyMessage);
+
+        return container;
+    }
+
+    const table = createElement('table', 'leaderboard');
+
+    const thead = createElement('thead');
+    const headerRow = createElement('tr');
+
+    const rankHeader = createElement('th', '', 'Место');
+    const movesHeader = createElement('th', '', 'Ходы');
+    const dateHeader = createElement('th', '', 'Дата');
+
+    headerRow.append(
+        rankHeader,
+        movesHeader,
+        dateHeader,
+    );
+
+    thead.append(headerRow);
+
+    const tbody = createElement('tbody');
+
+    results.forEach((result, index) => {
+        const row = createElement('tr');
+
+        const rank = createElement(
+            'td',
+            '',
+            String(index + 1),
+        );
+
+        const moves = createElement(
+            'td',
+            '',
+            String(result.moves),
+        );
+
+        const date = createElement(
+            'td',
+            '',
+            formatDate(result.timestamp),
+        );
+
+        row.append(rank, moves, date);
+        tbody.append(row);
+    });
+
+    table.append(thead, tbody);
+    container.append(table);
+
+    return container;
+};
+
+const showLeaderboardModal = () => {
+    const results = loadResults();
+
+    const leaderboard = createLeaderboard(results);
+
+    const closeButton = createButton(
+        'Закрыть',
+        'modal-close-button',
+    );
+
+    modal.content.replaceChildren(
+        leaderboard,
+        closeButton,
+    );
+
+    closeButton.addEventListener(
+        'click',
+        modal.close,
+    );
+
+    modal.open();
+};
+
 const showVictoryModal = () => {
     const title = createElement(
         'h2',
@@ -199,7 +311,7 @@ const showVictoryModal = () => {
     const message = createElement(
         'p',
         'modal-message',
-        `Вы нашли все пары за ${gameState.moves} ходов!`,
+        `Вы нашли все пары за ${gameState.moves} ${getMovesWord(gameState.moves)}`,
     );
 
     const actions = createElement(
@@ -268,7 +380,7 @@ const handleMatch = () => {
             saveResult(gameState.moves);
             gameState.resultSaved = true;
         }
-        
+
         showVictoryModal();
     }
 };
@@ -389,8 +501,6 @@ const startNewGame = () => {
 
 const { app, elements } = createApp(deck);
 
-const modal = createModal();
-
 document.body.append(
     app,
     modal.dialog,
@@ -407,4 +517,9 @@ elements.gameBoard.addEventListener('click', (event) => {
 elements.newGameButton.addEventListener(
     'click',
     startNewGame,
+);
+
+elements.leaderboardButton.addEventListener(
+    'click',
+    showLeaderboardModal,
 );
